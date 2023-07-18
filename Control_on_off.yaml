@@ -1,0 +1,62 @@
+esphome:
+  name: control_on_off
+  platform: ESP8266
+  board: nodemcu
+
+wifi:
+  ssid: "ssid"
+  password: "password"
+
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+
+ota:
+  password: "pass_ota"
+
+
+binary_sensor:
+  - platform: gpio
+    internal: true
+    pin: 
+      number: D2
+      inverted: true
+    name: "Estado"
+    on_press:
+      then:
+        - lambda: !lambda |-
+            id(Control).publish_state(true);
+    on_release:
+      then:
+        - lambda: !lambda |-
+            id(Control).publish_state(false);
+
+
+
+switch:
+  - platform: gpio
+    pin: D1
+    name: "SW1"
+    id: SW1
+    inverted: true
+    internal: true
+
+
+  - platform: template
+    name: Control
+    optimistic: true
+    id: Control
+    on_turn_on:
+      - switch.turn_on: SW1
+      - delay: 300ms
+      - switch.turn_off: SW1
+    on_turn_off:
+      - switch.turn_on: SW1
+      - delay: 300ms
+      - switch.turn_off: SW1
+
+
